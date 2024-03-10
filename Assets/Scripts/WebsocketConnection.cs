@@ -1,20 +1,22 @@
 using UnityEngine;
 using System;
-using UnityEngine.Networking;
-using System.Collections;
-using System.Text;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class WebsocketConnection : MonoBehaviour
 {
+    private ClientWebSocket webSocket;
     private static WebsocketConnection s_Instance;
     private Action<string> joinLobbySuccessCallback;
 
-    private void Awake()
+    private async void Awake()
     {
         if (s_Instance == null)
         {
             s_Instance = this;
             DontDestroyOnLoad(gameObject);
+            await ConnectToWebSocket();
         }
         else
         {
@@ -26,70 +28,109 @@ public class WebsocketConnection : MonoBehaviour
         }
     }
 
-    public void CreateLobby(string lobbyCode)
+    private async Task ConnectToWebSocket()
     {
-        StartCoroutine(CreateLobbyRequest(lobbyCode));
-    }
-
-
-
-    IEnumerator CreateLobbyRequest(string lobbyCode)
-    {
-        using (UnityWebRequest www = UnityWebRequest.PostWwwForm("http://localhost:5000/create-lobby", ""))
+        try
         {
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(lobbyCode);
-            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            www.uploadHandler.contentType = "text/plain";
-
-            yield return www.SendWebRequest();
-            Debug.Log(www);
-            Debug.Log(UnityWebRequest.Result.Success);
-
-            if (www.result == UnityWebRequest.Result.Success)
-            {
-                string responseText = www.downloadHandler.text;
-                Debug.Log(responseText);
-            }
-            else
-            {
-                Debug.Log("Not received anything");
-            }
+            webSocket = new ClientWebSocket();
+            await webSocket.ConnectAsync(new Uri("ws://localhost:5000"), CancellationToken.None);
+            OnWebSocketOpen();
+            await ReceiveLoop();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error connecting to WebSocket: {ex.Message}");
         }
     }
-    public void SendJoinLobbyCode(string lobbyCode, Action<string> onJoinSuccess)
+
+    private void OnWebSocketOpen()
     {
-        joinLobbySuccessCallback = onJoinSuccess;
-        StartCoroutine(SendJoinLobbyCodeRequest(lobbyCode));
+        Debug.Log("WebSocket connection established");
     }
 
-    IEnumerator SendJoinLobbyCodeRequest(string lobbyCode)
+    private async Task ReceiveLoop()
     {
-        using (UnityWebRequest www = UnityWebRequest.PostWwwForm("http://localhost:5000/join-lobby", ""))
+        try
         {
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(lobbyCode);
-            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            www.uploadHandler.contentType = "text/plain";
-
-            yield return www.SendWebRequest();
-            Debug.Log(www);
-            Debug.Log(www.result);
-
-            if (www.result == UnityWebRequest.Result.Success)
+            byte[] buffer = new byte[1024];
+            while (webSocket.State == WebSocketState.Open)
             {
-                string responseText = www.downloadHandler.text;
-                Debug.Log(responseText);
-                if (responseText.StartsWith("LobbyFound:"))
+                WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    // Extract the lobby code from the response
-                    string foundLobbyCode = responseText.Substring("LobbyFound:".Length);
-                    // Call the callback function with the found lobby code
-                    joinLobbySuccessCallback?.Invoke(foundLobbyCode);
+                    string message = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    Debug.Log($"Received message: {message}");
+
+                    if (message.StartsWith("LobbyJoined:"))
+                    {
+                        string lobbyCode = message.Split(':')[1].Trim();
+                        Debug.Log("Joined lobby with code: " + lobbyCode);
+                        // Invoke the callback with the lobby code
+                        joinLobbySuccessCallback?.Invoke(lobbyCode);
+                    }
+
+                   else if (message.StartsWith("JoinLobbyFromBrowser"))
+                    {
+                        Debug.Log("Data Received for request from beowser");
+                    }
+
+                    else if (message.StartsWith("Testing"))
+                    {
+                        Debug.Log("Data Received for request from beowser");
+                    }
                 }
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error in ReceiveLoop: {ex.Message}");
+        }
+    }
+
+    public async void SendLobbyCode(string lobbyCode)
+    {
+        try
+        {
+            if (webSocket != null && webSocket.State == WebSocketState.Open)
+            {
+                byte[] buffer = System.Text.Encoding.UTF8.GetBytes("LobbyCode:" + lobbyCode);
+                await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
             }
             else
             {
-                Debug.Log("Not received anything");
+                Debug.LogWarning("WebSocket connection is not open or WebSocket instance is null.");
             }
         }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error sending lobby code: {ex.Message}");
+        }
     }
+
+    public async void SendJoinLobbyCode(string lobbyCode, Action<string> onJoinSuccess)
+    {
+        try
+        {
+            if (webSocket != null && webSocket.State == WebSocketState.Open)
+            {
+                // Set the join lobby success callback
+                joinLobbySuccessCallback = onJoinSuccess;
+                // Send the join lobby code to the server
+                byte[] buffer = System.Text.Encoding.UTF8.GetBytes("JoinLobbyCode:" + lobbyCode);
+                await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+            else
+            {
+                Debug.LogWarning("WebSocket connection is not open or WebSocket instance is null.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error sending join lobby code: {ex.Message}");
+        }
+    }
+
+
+  
 }

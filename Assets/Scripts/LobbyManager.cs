@@ -11,6 +11,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public TMP_InputField joininputfield;
     public WebsocketConnection websocketConnection;
 
+
     private void Start()
     {
         PhotonNetwork.JoinLobby();
@@ -28,7 +29,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             PhotonNetwork.CreateRoom(roominputfield.text, new RoomOptions() { MaxPlayers = 3 });
 
             // Send the lobby code to the backend server
-            websocketConnection.CreateLobby(lobbyCode);
+            websocketConnection.SendLobbyCode(lobbyCode);
         }
     }
 
@@ -50,5 +51,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         PhotonNetwork.LoadLevel("Game");
+    }
+
+    public void Testing()
+    {
+
     }
 }
