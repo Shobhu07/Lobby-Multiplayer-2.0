@@ -23,13 +23,14 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         if (roominputfield != null)
         {
             string lobbyCode = roominputfield.text;
+            string username = PhotonNetwork.NickName; 
 
-            
+
 
             PhotonNetwork.CreateRoom(roominputfield.text, new RoomOptions() { MaxPlayers = 3 });
 
             // Send the lobby code to the backend server
-            websocketConnection.SendLobbyCode(lobbyCode);
+            websocketConnection.SendLobbyCode(lobbyCode, username);
         }
     }
 
@@ -38,8 +39,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         if (joininputfield != null)
         {
             string lobbyCode = joininputfield.text;
+            string username = PhotonNetwork.NickName;
          
-            websocketConnection.SendJoinLobbyCode(lobbyCode, OnJoinSuccess);
+            websocketConnection.SendJoinLobbyCode(lobbyCode,username, OnJoinSuccess);
         }
     }
 
@@ -53,8 +55,5 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.LoadLevel("Game");
     }
 
-    public void Testing()
-    {
-
-    }
+    
 }

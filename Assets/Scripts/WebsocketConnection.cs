@@ -69,15 +69,12 @@ public class WebsocketConnection : MonoBehaviour
                         joinLobbySuccessCallback?.Invoke(lobbyCode);
                     }
 
-                   else if (message.StartsWith("JoinLobbyFromBrowser"))
+                   else if (message.StartsWith("joinLobbyFromBrowser"))
                     {
                         Debug.Log("Data Received for request from beowser");
                     }
 
-                    else if (message.StartsWith("Testing"))
-                    {
-                        Debug.Log("Data Received for request from beowser");
-                    }
+                  
                 }
 
             }
@@ -88,13 +85,15 @@ public class WebsocketConnection : MonoBehaviour
         }
     }
 
-    public async void SendLobbyCode(string lobbyCode)
+    public async void SendLobbyCode(string lobbyCode, string username)
     {
         try
         {
             if (webSocket != null && webSocket.State == WebSocketState.Open)
             {
-                byte[] buffer = System.Text.Encoding.UTF8.GetBytes("LobbyCode:" + lobbyCode);
+                // Combine lobby code and username into a single message
+                string message = $"createLobby,{lobbyCode},{username}";
+                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(message);
                 await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
             }
             else
@@ -104,11 +103,11 @@ public class WebsocketConnection : MonoBehaviour
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Error sending lobby code: {ex.Message}");
+            Debug.LogError($"Error sending lobby code and username: {ex.Message}");
         }
     }
 
-    public async void SendJoinLobbyCode(string lobbyCode, Action<string> onJoinSuccess)
+    public async void SendJoinLobbyCode(string lobbyCode,string username, Action<string> onJoinSuccess)
     {
         try
         {
@@ -117,7 +116,8 @@ public class WebsocketConnection : MonoBehaviour
                 // Set the join lobby success callback
                 joinLobbySuccessCallback = onJoinSuccess;
                 // Send the join lobby code to the server
-                byte[] buffer = System.Text.Encoding.UTF8.GetBytes("JoinLobbyCode:" + lobbyCode);
+                string message = $"joinLobby,{lobbyCode},{username}";
+                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(message);
                 await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
             }
             else
@@ -132,5 +132,4 @@ public class WebsocketConnection : MonoBehaviour
     }
 
 
-  
 }
