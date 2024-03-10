@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 5000;
 
 
 let activeLobbies = [];
+let connectedClients = [];
 app.use(cors())
 
 app.use(bodyParser.text()); // Parse request body as text
@@ -44,6 +45,15 @@ app.post('/join-lobby', (req, res) => {
 function lobbyExists(lobbyCode) {
     return activeLobbies.some(lobby => lobby.lobbyCode === lobbyCode);
 }
+
+app.post('/connection-established', (req, res) => {
+    const clientIP = req.socket.remoteAddress;
+    if (!connectedClients.includes(clientIP)) {
+        connectedClients.push(clientIP);
+        console.log(`Client connected from IP: ${clientIP}`);
+    }
+    res.sendStatus(200);
+});
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
