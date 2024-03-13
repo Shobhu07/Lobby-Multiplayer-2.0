@@ -27,6 +27,10 @@ public class ConnectToServer : MonoBehaviourPunCallbacks
             PhotonNetwork.NickName = usernameInput.text;
             buttonText.text = "Connecting....";
 
+            string username = PhotonNetwork.NickName;
+            // Send the username to the backend server
+            websocketConnection.SendUsernameToServer(username);
+
             PhotonNetwork.ConnectUsingSettings();
 
 

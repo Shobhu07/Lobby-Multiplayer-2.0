@@ -10,13 +10,17 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public TMP_InputField roominputfield;
     public TMP_InputField joininputfield;
     public WebsocketConnection websocketConnection;
+  
 
 
     private void Start()
     {
         PhotonNetwork.JoinLobby();
+
         websocketConnection = FindObjectOfType<WebsocketConnection>();
     }
+
+  
 
     public void OnClickCreate()
     {
