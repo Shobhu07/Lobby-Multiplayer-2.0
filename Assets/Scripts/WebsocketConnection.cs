@@ -3,13 +3,14 @@ using BestHTTP.WebSocket;
 using System;
 using System.Threading;
 using System.Text;
+using Photon.Pun;
 
 public class WebsocketConnection : MonoBehaviour
 {
     private WebSocket webSocket;
     private static WebsocketConnection s_Instance;
     private Action<string> joinLobbySuccessCallback;
-    private string userID;
+    public static string userID;
 
     private void Awake()
     {
@@ -94,6 +95,10 @@ public class WebsocketConnection : MonoBehaviour
         else if (message.StartsWith("joinLobbyFromBrowser"))
         {
             Debug.Log("Data Received for request from beowser");
+
+            
+
+
         }
         else if (message.StartsWith("mappingDone"))
         {
@@ -132,6 +137,13 @@ public class WebsocketConnection : MonoBehaviour
             Debug.LogError($"Error sending user ID: {ex.Message}");
         }
     }
+
+  /*  public void JoinLobbyFromBrowser(string lobbycode, Action<string> onJoinSuccess)
+    {
+        Debug.Log("Lobby Joined From Browser");
+        joinLobbySuccessCallback = onJoinSuccess;
+        joinLobbySuccessCallback?.Invoke(lobbycode);
+    } */
 
     public void SendUsernameToServer(string username)
     {
@@ -197,5 +209,11 @@ public class WebsocketConnection : MonoBehaviour
         {
             Debug.LogError($"Error sending join lobby code: {ex.Message}");
         }
+    }
+
+    // Method to retrieve the userID
+    public string GetUserID()
+    {
+        return userID;
     }
 }
