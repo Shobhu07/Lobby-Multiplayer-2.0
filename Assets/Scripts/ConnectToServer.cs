@@ -18,11 +18,9 @@ public class ConnectToServer : MonoBehaviourPunCallbacks
         // Get a reference to the WebsocketConnection script
         websocketConnection = FindObjectOfType<WebsocketConnection>();
     }
-
-
     public void OnCLickConnect()
     {
-        if (usernameInput != null)
+        if (usernameInput != null && !string.IsNullOrEmpty(usernameInput.text))
         {
             PhotonNetwork.NickName = usernameInput.text;
             buttonText.text = "Connecting....";
@@ -32,18 +30,10 @@ public class ConnectToServer : MonoBehaviourPunCallbacks
             websocketConnection.SendUsernameToServer(username);
 
             PhotonNetwork.ConnectUsingSettings();
-
-
-
-
-
         }
     }
-
     public override void OnConnectedToMaster()
     {
         SceneManager.LoadScene("Lobby");
     }
-
-   
 }

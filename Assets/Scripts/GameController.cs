@@ -6,13 +6,20 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using System.Runtime.InteropServices;
 
 public class GameController : MonoBehaviourPunCallbacks
 {
     private static GameController s_Instance;
-    private WebsocketConnection websocketObject;
     public LobbyManager lobbymanager;
     private string lobbyCodeToJoin;
+    public static string userID;
+
+    [DllImport("__Internal")]
+    private static extern void SendUserIdToReact(string userId);
+
+    [DllImport("__Internal")]
+    public static extern void SendLobbyCodeToReact(string LobbyCode);
 
     private void Awake()
     {
@@ -28,50 +35,42 @@ public class GameController : MonoBehaviourPunCallbacks
                 Destroy(gameObject);
                 return;
             }
-        }
-
-      
+        } 
     }
+
+ /*   public void SomeMethod()
+    {
+#if UNITY_WEBGL == true && UNITY_EDITOR == false
+    GameOver ("Player1", 100);
+#endif
+    } */
 
     // Start is called before the first frame update
     void Start()
-    {  // Obtain reference to the WebsocketConnection script
-        websocketObject = GetComponent<WebsocketConnection>();
-       
-        
+    {
+        // Attempt to load existing user ID
+        userID = PlayerPrefs.GetString("UserID");
 
-        // Ensure websocketObject is not null
-        if (websocketObject != null)
+        // If no user ID found, generate a new one
+        if (string.IsNullOrEmpty(userID))
         {
-            // Get the userID from WebsocketConnection
-            string userID = websocketObject.GetUserID();
-            Debug.Log("UserID obtained in GameController: " + userID);
-            SendMessageToReact(userID);
+            userID = GenerateUserID();
+            PlayerPrefs.SetString("UserID", userID);
+            PlayerPrefs.Save();
+      
         }
-        else
-        {
-            Debug.LogError("WebsocketConnection component not found.");
-        }
+        SendUserIdToReact(userID);
     }
 
-    private void SendMessageToReact(string message)
+    private string GenerateUserID()
     {
-        // Ensure that the method is not called recursively
-        if (gameObject != null)
-        {
-            // Send a message to the React component
-            gameObject.SendMessage("ReceiveMessageFromUnity", message);
-        }
-        else
-        {
-            Debug.LogWarning("GameObject is null. Unable to send message to React.");
-        }
+        // Generate a new GUID (Globally Unique Identifier)
+        return Guid.NewGuid().ToString();
     }
 
     public void ReceiveMessageFromReact(string message)
     {
         Debug.Log($"Received message from React: {message}");
-
     }
 
     public void LobbyCodeFromBrowser(string lobbycode)
@@ -93,9 +92,7 @@ public class GameController : MonoBehaviourPunCallbacks
         await ConnectToPhoton();
         // Store the lobby code to join later
         lobbyCodeToJoin = lobbycode;
-
     }
-
     private async Task ConnectToPhoton()
     {
         // Connect to Photon
@@ -111,14 +108,6 @@ public class GameController : MonoBehaviourPunCallbacks
         }
 
         Debug.Log("Connected to Photon!");
-    }
-
-    public override void OnConnectedToMaster()
-    {
-        Debug.Log("OnConnectedToMaster callback received.");
-
-        // Join the default lobby
-        PhotonNetwork.JoinLobby();
     }
 
     public override void OnJoinedLobby()

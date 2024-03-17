@@ -10,6 +10,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public TMP_InputField roominputfield;
     public TMP_InputField joininputfield;
     public WebsocketConnection websocketConnection;
+    private GameController gameController;  
   
 
 
@@ -18,9 +19,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.JoinLobby();
 
         websocketConnection = FindObjectOfType<WebsocketConnection>();
+        gameController = GetComponent<GameController>();
     }
-
-  
 
     public void OnClickCreate()
     {
@@ -29,12 +29,12 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             string lobbyCode = roominputfield.text;
             string username = PhotonNetwork.NickName; 
 
-
-
             PhotonNetwork.CreateRoom(roominputfield.text, new RoomOptions() { MaxPlayers = 3 });
 
             // Send the lobby code to the backend server
             websocketConnection.SendLobbyCode(lobbyCode, username);
+
+            GameController.SendLobbyCodeToReact(lobbyCode);
         }
     }
 
@@ -51,13 +51,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public void OnJoinSuccess(string lobbyCode)
     {
-        
         PhotonNetwork.JoinRoom(lobbyCode);
     }   
     public override void OnJoinedRoom()
     {
         PhotonNetwork.LoadLevel("Game");
-    }
-
-    
+    }  
 }

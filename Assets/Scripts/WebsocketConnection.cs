@@ -10,7 +10,8 @@ public class WebsocketConnection : MonoBehaviour
     private WebSocket webSocket;
     private static WebsocketConnection s_Instance;
     private Action<string> joinLobbySuccessCallback;
-    public static string userID;
+    //public static string userID;
+
 
     private void Awake()
     {
@@ -32,27 +33,20 @@ public class WebsocketConnection : MonoBehaviour
 
     private void Start()
     {
-        // Attempt to load existing user ID
-        userID = PlayerPrefs.GetString("UserID");
+        /* // Attempt to load existing user ID
+         userID = PlayerPrefs.GetString("UserID");
 
-        // If no user ID found, generate a new one
-        if (string.IsNullOrEmpty(userID))
-        {
-            userID = GenerateUserID();
-            PlayerPrefs.SetString("UserID", userID);
-            PlayerPrefs.Save();
-        }
+         // If no user ID found, generate a new one
+         if (string.IsNullOrEmpty(userID))
+         {
+             userID = GenerateUserID();
+             PlayerPrefs.SetString("UserID", userID);
+             PlayerPrefs.Save();
+         }
 
-        Debug.Log("User ID: " + userID);
+         Debug.Log("User ID: " + userID);
 
-        // Send the user ID to the server
-        SendUserIDToServer(userID);
-    }
-
-    private string GenerateUserID()
-    {
-        // Generate a new GUID (Globally Unique Identifier)
-        return Guid.NewGuid().ToString();
+         SendUserIDToServer(userId)*/
     }
 
     private void ConnectToWebSocket()
@@ -212,8 +206,8 @@ public class WebsocketConnection : MonoBehaviour
     }
 
     // Method to retrieve the userID
-    public string GetUserID()
+   /* public string GetUserID()
     {
         return userID;
-    }
+    } */
 }
