@@ -19,7 +19,13 @@ public class GameController : MonoBehaviourPunCallbacks
     private static extern void SendUserIdToReact(string userId);
 
     [DllImport("__Internal")]
-    public static extern void SendLobbyCodeToReact(string LobbyCode);
+    public static extern void SendLobbyCodeToReact(string LobbyCode,string username);
+
+    [DllImport("__Internal")]
+    public static extern void SendDeleteInformation(string LobbyCode, string username);
+
+    [DllImport("__Internal")]
+    public static extern void SendJoinLobbyRequest(string LobbyCode, string username);
 
     private void Awake()
     {

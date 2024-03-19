@@ -467,6 +467,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70f97038e95ae9143805bfbe9e8ab20b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  manager: {fileID: 0}
 --- !u!114 &886145867
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -513,7 +514,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 886145866}
         m_TargetAssemblyTypeName: LeaveLobby, Assembly-CSharp
-        m_MethodName: OnDeleteLobby
+        m_MethodName: OnLeaveLobby
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

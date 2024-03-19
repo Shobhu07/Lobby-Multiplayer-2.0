@@ -11,27 +11,30 @@ public class ConnectToServer : MonoBehaviourPunCallbacks
 {
     public TMP_InputField usernameInput;
     public TextMeshProUGUI buttonText;
-    public WebsocketConnection websocketConnection; // Corrected variable type
+
 
     private void Start()
     {
-        // Get a reference to the WebsocketConnection script
-        websocketConnection = FindObjectOfType<WebsocketConnection>();
+
     }
-    public void OnCLickConnect()
+
+    public void OnClickConnect()
     {
         if (usernameInput != null && !string.IsNullOrEmpty(usernameInput.text))
         {
-            PhotonNetwork.NickName = usernameInput.text;
-            buttonText.text = "Connecting....";
+            string username = usernameInput.text;
 
-            string username = PhotonNetwork.NickName;
-            // Send the username to the backend server
-            websocketConnection.SendUsernameToServer(username);
+            // Save username to PlayerPrefs
+            PlayerPrefs.SetString("Username", username);
+            PlayerPrefs.Save();
+
+            PhotonNetwork.NickName = username;
+            buttonText.text = "Connecting....";
 
             PhotonNetwork.ConnectUsingSettings();
         }
     }
+
     public override void OnConnectedToMaster()
     {
         SceneManager.LoadScene("Lobby");

@@ -5,9 +5,17 @@ using UnityEngine;
 
 public class LeaveLobby : MonoBehaviour
 {
-   public void OnDeleteLobby()
+    public LobbyManager manager;
+
+   public void OnLeaveLobby()
     {
         PhotonNetwork.LeaveRoom();
         PhotonNetwork.LoadLevel(1);
+
+        
+
+        string LobbyCode =  PlayerPrefs.GetString("lobbyCode");
+       string username = PhotonNetwork.NickName;     
+       GameController.SendDeleteInformation(LobbyCode,username);
     }
 }
